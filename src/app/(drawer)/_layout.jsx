@@ -32,6 +32,7 @@ export default function DrawerLayout() {
       }}
     >
       <Drawer.Screen name="index" options={{ drawerLabel: 'Inicio' }} />
+      <Drawer.Screen name="usuarios" options={{ drawerLabel: 'Usuarios' }} />
     </Drawer>
   );
 }
