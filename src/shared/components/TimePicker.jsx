@@ -4,41 +4,46 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import colors from '../../theme/colors.js';
 import Icon from '../../theme/icons.js';
 
-export default function CustomDatePicker({
+export default function CustomTimePicker({
     label,
     labelIcon,
     value,
     onChange,
-    placeholder = 'AAAA-MM-DD',
+    placeholder = 'HH:mm',
     disabled = false,
     style,
 }) {
     const inputRef = useRef(null);
     const [showPickerNative, setShowPickerNative] = useState(false);
 
-    const parseStringToDate = (dateStr) => {
-        if (!dateStr) return new Date();
-        const parts = dateStr.split('-');
-        if (parts.length === 3) {
-            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+    const parseStringToTimeDate = (timeStr) => {
+        const now = new Date();
+        if (!timeStr) return now;
+        const parts = timeStr.split(':');
+        if (parts.length >= 2) {
+            now.setHours(parseInt(parts[0], 10), parseInt(parts[1], 10), 0, 0);
         }
-        return new Date();
+        return now;
     };
 
-    const formatDateToString = (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+    const formatTimeTo24h = (date) => {
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        return `${hours}:${minutes}`;
     };
 
-    const formatDisplayDate = (dateString) => {
-        if (!dateString) return '';
-        const parts = dateString.split('-');
-        if (parts.length === 3) {
-            return `${parts[2]} / ${parts[1]} / ${parts[0]}`;
+    const formatDisplayTime = (timeStr) => {
+        if (!timeStr) return '';
+        const parts = timeStr.split(':');
+        if (parts.length >= 2) {
+            let hours = parseInt(parts[0], 10);
+            const minutes = parts[1];
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            const formattedHours = String(hours).padStart(2, '0');
+            return `${formattedHours}:${minutes} ${ampm}`;
         }
-        return dateString;
+        return timeStr;
     };
 
     const handlePressCard = () => {
@@ -60,14 +65,13 @@ export default function CustomDatePicker({
         }
     };
 
-    const handleNativeDateChange = (event, selectedDate) => {
-
+    const handleNativeTimeChange = (event, selectedDate) => {
         if (Platform.OS === 'android') {
             setShowPickerNative(false);
         }
 
         if (event.type === 'set' && selectedDate) {
-            const formatted = formatDateToString(selectedDate);
+            const formatted = formatTimeTo24h(selectedDate);
             if (onChange) onChange(formatted);
         } else if (event.type === 'dismissed') {
             setShowPickerNative(false);
@@ -94,20 +98,20 @@ export default function CustomDatePicker({
             {/* 2. Tarjeta Táctil */}
             <View style={styles.cardWrapper}>
                 <TouchableOpacity
-                    style={[styles.dateCard, disabled && styles.disabledCard]}
+                    style={[styles.timeCard, disabled && styles.disabledCard]}
                     activeOpacity={0.7}
                     disabled={disabled}
                     onPress={handlePressCard}
                 >
                     <Text
-                        style={[styles.dateText, !value && styles.placeholderText]}
+                        style={[styles.timeText, !value && styles.placeholderText]}
                         numberOfLines={1}
                     >
-                        {value ? formatDisplayDate(value) : placeholder}
+                        {value ? formatDisplayTime(value) : placeholder}
                     </Text>
 
                     <Icon
-                        name="calendar"
+                        name="clock"
                         size={20}
                         color={colors.textHeadline || '#1A1D1E'}
                         style={styles.rightIconStyle}
@@ -118,7 +122,7 @@ export default function CustomDatePicker({
                 {Platform.OS === 'web' && (
                     <input
                         ref={inputRef}
-                        type="date"
+                        type="time"
                         value={value || ''}
                         onChange={(e) => onChange && onChange(e.target.value)}
                         disabled={disabled}
@@ -127,13 +131,14 @@ export default function CustomDatePicker({
                 )}
             </View>
 
-            {/* 3. Calendario Nativo (Android/iOS) */}
+            {/* 3. Selector Nativo de Hora (Móvil) */}
             {showPickerNative && Platform.OS !== 'web' && (
                 <DateTimePicker
-                    value={parseStringToDate(value)}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                    onChange={handleNativeDateChange}
+                    value={parseStringToTimeDate(value)}
+                    mode="time"
+                    is24Hour={false}
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={handleNativeTimeChange}
                 />
             )}
         </View>
@@ -165,7 +170,7 @@ const styles = StyleSheet.create({
         position: 'relative',
         width: '100%',
     },
-    dateCard: {
+    timeCard: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -177,7 +182,7 @@ const styles = StyleSheet.create({
     disabledCard: {
         opacity: 0.6,
     },
-    dateText: {
+    timeText: {
         flex: 1,
         fontSize: 16,
         fontWeight: '500',
@@ -201,9 +206,10 @@ const styles = StyleSheet.create({
     },
 });
 
-{/* <CustomDatePicker
-    label="Fecha de Registro"
-    labelIcon="calendar"
-    value={fecha}
-    onChange={(nuevaFecha) => setFecha(nuevaFecha)}
+{/* <CustomTimePicker
+    label="Hora de Registro"
+    labelIcon="clock"
+    value={hora}
+    onChange={(nuevaHora) => setHora(nuevaHora)}
+    placeholder="Seleccione la hora"
 /> */}
