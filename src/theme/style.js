@@ -15,7 +15,7 @@ const styleGlobal = {
     paddingTop: 12,
     paddingBottom: 16,
     paddingHorizontal: isMobile ? 14 : 24,
-    gap: 2, // Espaciado vertical entre Header, Card, Tabla.
+    gap: 12, // Espaciado vertical entre Header, Card, Tabla.
   }),
 };
 

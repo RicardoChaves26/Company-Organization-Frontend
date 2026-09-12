@@ -121,8 +121,6 @@ const styles = StyleSheet.create({
   container: {
     marginVertical: 10,
     width: '100%',
-    maxWidth: 500,
-    alignSelf: 'center',
   },
   labelRow: {
     flexDirection: 'row',
@@ -146,7 +144,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cardBackground,
     borderRadius: 20,
     paddingHorizontal: 20,
-    height: 64, 
+    height: 64,
   },
   disabledCard: {
     opacity: 0.6,

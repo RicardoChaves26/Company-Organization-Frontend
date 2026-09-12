@@ -25,7 +25,8 @@ const styles = StyleSheet.create({
     card: {
         backgroundColor: colors.background,
         borderRadius: 16,
-        padding: 20,
+        paddingVertical: 14, 
+        paddingHorizontal: 16, 
         borderWidth: 1,
         borderColor: colors.background,
         // Sombras para iOS y Web
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: 16,
+        marginBottom: 12,
     },
     headerTextContainer: {
         flex: 1,
