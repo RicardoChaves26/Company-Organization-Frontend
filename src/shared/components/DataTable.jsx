@@ -1,27 +1,41 @@
-import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ScrollView, useWindowDimensions } from 'react-native';
 import colors from '../../theme/colors';
 
-export default function DataTable({ columns, data, title, footer }) {
+export default function DataTable({ columns, data, title, footer, minWidth = 650 }) {
+    const { width: screenWidth } = useWindowDimensions();
+    const isMobile = screenWidth < 768;
+
+    // Calcula el estilo de celda según el dispositivo
+    const getColumnStyle = (col) => {
+        if (isMobile) {
+            // En móvil usamos anchos fijos/mínimos para mantener estructura con scroll horizontal
+            return { width: col.width || 180 };
+        }
+        // En PC/Tablet usamos flex para ocupar todo el ancho disponible
+        if (col.width && typeof col.width === 'number') {
+            return { flex: col.flex || 1, minWidth: col.width };
+        }
+        return { flex: col.flex || 1 };
+    };
 
     const renderHeader = () => (
         <View style={styles.tableHeader}>
             {columns.map((col) => (
-                <Text
+                <View
                     key={col.key}
                     style={[
-                        styles.headerText,
-                        col.width ? { width: col.width } : { flex: 1 },
-                        col.align && { textAlign: col.align },
+                        getColumnStyle(col),
+                        col.align && { alignItems: col.align === 'right' ? 'flex-end' : 'flex-start' },
                     ]}
                 >
-                    {col.title.toUpperCase()}
-                </Text>
+                    <Text style={[styles.headerText, col.align && { textAlign: col.align }]} numberOfLines={1}>
+                        {col.title.toUpperCase()}
+                    </Text>
+                </View>
             ))}
         </View>
     );
 
-    // Renderizado de cada fila
     const renderRow = ({ item, index }) => (
         <View style={[styles.row, index % 2 === 1 && styles.rowAlternate]}>
             {columns.map((col) => (
@@ -29,39 +43,50 @@ export default function DataTable({ columns, data, title, footer }) {
                     key={col.key}
                     style={[
                         styles.cell,
-                        col.width ? { width: col.width } : { flex: 1 },
+                        getColumnStyle(col),
                         col.align && { alignItems: col.align === 'right' ? 'flex-end' : 'flex-start' },
                     ]}
                 >
                     {col.render ? (
                         col.render(item[col.key], item)
                     ) : (
-                        <Text style={styles.cellText}>{item[col.key] ?? '-'}</Text>
+                        <Text style={styles.cellText} numberOfLines={2}>
+                            {item[col.key] ?? '-'}
+                        </Text>
                     )}
                 </View>
             ))}
         </View>
     );
 
+    const renderTableContent = () => (
+        <View style={{ width: isMobile ? minWidth : '100%' }}>
+            {renderHeader()}
+            <FlatList
+                data={data}
+                renderItem={renderRow}
+                keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+                scrollEnabled={false}
+            />
+        </View>
+    );
+
     return (
         <View style={styles.cardContainer}>
-            {/* Título Superior Opción (como en la Imagen 3) */}
             {title && (
                 <View style={styles.titleContainer}>
                     <Text style={styles.tableTitle}>{title}</Text>
                 </View>
             )}
 
-            {/* Tabla */}
-            {renderHeader()}
-            <FlatList
-                data={data}
-                renderItem={renderRow}
-                keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-                scrollEnabled={false} // Si está dentro de un ScrollView general
-            />
+            {isMobile ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+                    {renderTableContent()}
+                </ScrollView>
+            ) : (
+                renderTableContent()
+            )}
 
-            {/* Pie de Tabla (Paginación / Totales) */}
             {footer && (
                 <View style={styles.footerContainer}>
                     <Text style={styles.footerText}>
@@ -83,6 +108,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         elevation: 2,
         marginVertical: 10,
+        width: '100%',
     },
     titleContainer: {
         paddingHorizontal: 20,
@@ -120,7 +146,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#FAFCFF',
     },
     cell: {
-        justify: 'center',
+        justifyContent: 'center',
+        paddingRight: 12,
     },
     cellText: {
         fontSize: 13,
@@ -147,7 +174,3 @@ const styles = StyleSheet.create({
         gap: 8,
     },
 });
-
-{/* <DataTable columns={columns} data={datos} />; */}
-// Se debe tener una de columnas y otra de datos ejemplo. 
-// Esto para datos mock
