@@ -35,6 +35,7 @@ export default function DrawerLayout() {
       <Drawer.Screen name="usuarios" options={{ drawerLabel: 'Usuarios' }} />
       <Drawer.Screen name="encierros" options={{ drawerLabel: 'Encierros' }} />
       <Drawer.Screen name="lotes" options={{ drawerLabel: 'Lotes' }} />
+      <Drawer.Screen name="inventarios" options={{ drawerLabel: 'Inventarios' }} />
     </Drawer>
   );
 }
