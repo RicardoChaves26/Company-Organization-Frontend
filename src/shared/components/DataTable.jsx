@@ -1,27 +1,52 @@
-import React from 'react';
-import { StyleSheet, View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, Text, FlatList, ScrollView, useWindowDimensions } from 'react-native';
 import colors from '../../theme/colors';
 
-export default function DataTable({ columns, data, title, footer }) {
+export default function DataTable({ columns, data, title, footer, minWidth = 650 }) {
+    const { width: screenWidth } = useWindowDimensions();
+    const isMobile = screenWidth < 768;
+
+    // Calcula el estilo de celda según el dispositivo
+    const getColumnStyle = (col) => {
+        if (isMobile) {
+            
+            return { width: col.widthMobile || col.width || 180 };
+        }
+        if (col.width && typeof col.width === 'number') {
+            return { flex: col.flex || 1, minWidth: col.width };
+        }
+        return { flex: col.flex || 1 };
+    };
+
+    const getAlignmentStyle = (align) => {
+        if (align === 'center') return { alignItems: 'center', justifyContent: 'center' };
+        if (align === 'right') return { alignItems: 'flex-end', justifyContent: 'center' };
+        return { alignItems: 'flex-start', justifyContent: 'center' };
+    };
 
     const renderHeader = () => (
         <View style={styles.tableHeader}>
             {columns.map((col) => (
-                <Text
+                <View
                     key={col.key}
                     style={[
-                        styles.headerText,
-                        col.width ? { width: col.width } : { flex: 1 },
-                        col.align && { textAlign: col.align },
+                        getColumnStyle(col),
+                        getAlignmentStyle(col.align),
                     ]}
                 >
-                    {col.title.toUpperCase()}
-                </Text>
+                    <Text 
+                        style={[
+                            styles.headerText, 
+                            col.align && { textAlign: col.align }
+                        ]} 
+                        numberOfLines={1}
+                    >
+                        {col.title.toUpperCase()}
+                    </Text>
+                </View>
             ))}
         </View>
     );
 
-    // Renderizado de cada fila
     const renderRow = ({ item, index }) => (
         <View style={[styles.row, index % 2 === 1 && styles.rowAlternate]}>
             {columns.map((col) => (
@@ -29,39 +54,50 @@ export default function DataTable({ columns, data, title, footer }) {
                     key={col.key}
                     style={[
                         styles.cell,
-                        col.width ? { width: col.width } : { flex: 1 },
-                        col.align && { alignItems: col.align === 'right' ? 'flex-end' : 'flex-start' },
+                        getColumnStyle(col),
+                        getAlignmentStyle(col.align),
                     ]}
                 >
                     {col.render ? (
                         col.render(item[col.key], item)
                     ) : (
-                        <Text style={styles.cellText}>{item[col.key] ?? '-'}</Text>
+                        <Text style={styles.cellText} numberOfLines={2}>
+                            {item[col.key] ?? '-'}
+                        </Text>
                     )}
                 </View>
             ))}
         </View>
     );
 
+    const renderTableContent = () => (
+        <View style={{ width: isMobile ? minWidth : '100%' }}>
+            {renderHeader()}
+            <FlatList
+                data={data}
+                renderItem={renderRow}
+                keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+                scrollEnabled={false}
+            />
+        </View>
+    );
+
     return (
         <View style={styles.cardContainer}>
-            {/* Título Superior Opción (como en la Imagen 3) */}
             {title && (
                 <View style={styles.titleContainer}>
                     <Text style={styles.tableTitle}>{title}</Text>
                 </View>
             )}
 
-            {/* Tabla */}
-            {renderHeader()}
-            <FlatList
-                data={data}
-                renderItem={renderRow}
-                keyExtractor={(item, index) => item.id?.toString() || index.toString()}
-                scrollEnabled={false} // Si está dentro de un ScrollView general
-            />
+            {isMobile ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+                    {renderTableContent()}
+                </ScrollView>
+            ) : (
+                renderTableContent()
+            )}
 
-            {/* Pie de Tabla (Paginación / Totales) */}
             {footer && (
                 <View style={styles.footerContainer}>
                     <Text style={styles.footerText}>
@@ -79,10 +115,11 @@ const styles = StyleSheet.create({
         backgroundColor: colors.background,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: '#EBF0F5',
+        borderColor: colors.background,
         overflow: 'hidden',
         elevation: 2,
         marginVertical: 10,
+        width: '100%',
     },
     titleContainer: {
         paddingHorizontal: 20,
@@ -114,13 +151,13 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#F1F5F9',
+        borderBottomColor: colors.background,
     },
     rowAlternate: {
-        backgroundColor: '#FAFCFF',
+        backgroundColor: colors.background,
     },
     cell: {
-        justify: 'center',
+        paddingRight: 12,
     },
     cellText: {
         fontSize: 13,
@@ -133,7 +170,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingVertical: 14,
-        backgroundColor: '#F8FAFC',
+        backgroundColor: colors.background,
         borderTopWidth: 1,
         borderTopColor: colors.buttonSecondary,
     },
@@ -147,7 +184,3 @@ const styles = StyleSheet.create({
         gap: 8,
     },
 });
-
-{/* <DataTable columns={columns} data={datos} />; */}
-// Se debe tener una de columnas y otra de datos ejemplo. 
-// Esto para datos mock
