@@ -15,7 +15,6 @@ OBTENER TODOS LOS LOTES
 export const getLotes = async () => {
     try {
         const response = await api.get(ENDPOINT);
-        console.log("Response recibida:", JSON.stringify(response, null, 2));
         return response.data.data;
     } catch (error) {
         throw construirErrorHttp(error, "No se pudieron obtener los lotes");
