@@ -6,7 +6,7 @@ import colors from '../../theme/colors.js';
 
 export default function CustomModal({
   visible = false,
-  type = 'danger', // 'danger' | 'warning' | 'info' | 'success'
+  type = 'danger',
   title = '¿Confirmar acción?',
   message = '',
   confirmText = 'Confirmar',
@@ -85,7 +85,7 @@ export default function CustomModal({
                 variant="secondary"
                 onPress={onCancel}
                 disabled={loading}
-                style={{ width: '100%' }} // 👈 Forzar ancho completo
+                style={{ width: '100%' }}
                 fullWidth
               />
             </View>
@@ -95,7 +95,7 @@ export default function CustomModal({
                 variant={config.btnVariant}
                 onPress={onConfirm}
                 disabled={loading}
-                style={{ width: '100%' }} // 👈 Forzar ancho completo
+                style={{ width: '100%' }} 
                 fullWidth
               />
             </View>
@@ -109,17 +109,17 @@ export default function CustomModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    backgroundColor: colors.secondary,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
   },
   modalCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.background,
     borderRadius: 20,
     padding: 24,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.15,
     shadowRadius: 20,
@@ -136,13 +136,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '700',
-    color: colors.textHeadline || '#0F172A',
+    color: colors.textHeadline,
     textAlign: 'center',
     marginBottom: 8,
   },
   message: {
     fontSize: 14,
-    color: colors.textMuted || '#64748B',
+    color: colors.textMuted,
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,
