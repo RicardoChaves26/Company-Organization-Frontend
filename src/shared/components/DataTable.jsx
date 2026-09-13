@@ -8,14 +8,19 @@ export default function DataTable({ columns, data, title, footer, minWidth = 650
     // Calcula el estilo de celda según el dispositivo
     const getColumnStyle = (col) => {
         if (isMobile) {
-            // En móvil usamos anchos fijos/mínimos para mantener estructura con scroll horizontal
-            return { width: col.width || 180 };
+            
+            return { width: col.widthMobile || col.width || 180 };
         }
-        // En PC/Tablet usamos flex para ocupar todo el ancho disponible
         if (col.width && typeof col.width === 'number') {
             return { flex: col.flex || 1, minWidth: col.width };
         }
         return { flex: col.flex || 1 };
+    };
+
+    const getAlignmentStyle = (align) => {
+        if (align === 'center') return { alignItems: 'center', justifyContent: 'center' };
+        if (align === 'right') return { alignItems: 'flex-end', justifyContent: 'center' };
+        return { alignItems: 'flex-start', justifyContent: 'center' };
     };
 
     const renderHeader = () => (
@@ -25,10 +30,16 @@ export default function DataTable({ columns, data, title, footer, minWidth = 650
                     key={col.key}
                     style={[
                         getColumnStyle(col),
-                        col.align && { alignItems: col.align === 'right' ? 'flex-end' : 'flex-start' },
+                        getAlignmentStyle(col.align),
                     ]}
                 >
-                    <Text style={[styles.headerText, col.align && { textAlign: col.align }]} numberOfLines={1}>
+                    <Text 
+                        style={[
+                            styles.headerText, 
+                            col.align && { textAlign: col.align }
+                        ]} 
+                        numberOfLines={1}
+                    >
                         {col.title.toUpperCase()}
                     </Text>
                 </View>
@@ -44,7 +55,7 @@ export default function DataTable({ columns, data, title, footer, minWidth = 650
                     style={[
                         styles.cell,
                         getColumnStyle(col),
-                        col.align && { alignItems: col.align === 'right' ? 'flex-end' : 'flex-start' },
+                        getAlignmentStyle(col.align),
                     ]}
                 >
                     {col.render ? (
@@ -146,7 +157,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#FAFCFF',
     },
     cell: {
-        justifyContent: 'center',
         paddingRight: 12,
     },
     cellText: {
