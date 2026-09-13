@@ -79,7 +79,7 @@ export default function CustomModal({
 
           {/* BOTONES DE ACCIÓN */}
           <View style={isMobile ? styles.actionsMobile : styles.actionsDesktop}>
-            <View style={styles.btnWrapper}>
+            <View style={[styles.btnWrapper, { flex: isMobile ? 0 : 1, width: isMobile ? '100%' : 'auto', minWidth: isMobile ? '100%' : 130 }]}>
               <Button
                 title={cancelText}
                 variant="secondary"
@@ -89,13 +89,16 @@ export default function CustomModal({
                 fullWidth
               />
             </View>
-            <View style={styles.btnWrapper}>
+            <View style={[styles.btnWrapper, { flex: isMobile ? 0 : 1, width: isMobile ? '100%' : 'auto', minWidth: isMobile ? '100%' : 130 }]}>
               <Button
                 title={loading ? 'Procesando...' : confirmText}
                 variant={config.btnVariant}
+                style={{ 
+                  width: '100%', 
+                  backgroundColor: type === 'danger' ? '#DC2626' : undefined 
+                }}
                 onPress={onConfirm}
                 disabled={loading}
-                style={{ width: '100%' }} 
                 fullWidth
               />
             </View>
@@ -109,7 +112,7 @@ export default function CustomModal({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: colors.secondary,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
@@ -146,6 +149,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
     lineHeight: 20,
+    maxWidth: '90%',
+    alignSelf: 'center',
   },
   actionsDesktop: {
     flexDirection: 'row',
@@ -160,8 +165,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   btnWrapper: {
-    flex: 1,
-    alignItems: 'stretch',
     justifyContent: 'center',
   },
 });
