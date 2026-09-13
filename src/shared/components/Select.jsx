@@ -33,7 +33,7 @@ export default function CustomSelect({
     };
 
     return (
-        <View style={[styles.container, style, Platform.OS === 'web' && { zIndex: isOpen ? 1000 : 1 }]}>
+        <View style={[styles.container, style, { zIndex: isOpen ? 9999 : 1, elevation: isOpen ? 999 : 1 }]}>
             {/* 1. Encabezado del Select */}
             {label && (
                 <View style={styles.labelRow}>
@@ -157,8 +157,8 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 6 },
         shadowOpacity: 0.12,
         shadowRadius: 10,
-        elevation: 10,
-        zIndex: 999,
+        elevation: 999,
+        zIndex: 9999,
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: colors.cardBackground,
@@ -190,11 +190,3 @@ const styles = StyleSheet.create({
         color: colors.primary,
     },
 });
-
-{/* <CustomSelect
-    label="Encierro Destino"
-    labelIcon="home"
-    options={ENCIERROS_PLANOS}
-    value={encierro}
-    onSelect={(val) => setEncierro(val)}
-/> */}

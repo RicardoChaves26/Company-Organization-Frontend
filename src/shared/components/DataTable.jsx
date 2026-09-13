@@ -5,17 +5,22 @@ export default function DataTable({ columns, data, title, footer, minWidth = 650
     const { width: screenWidth } = useWindowDimensions();
     const isMobile = screenWidth < 768;
 
+    const getColumnWidth = (col) => col.widthMobile || col.width || 180;
+
     // Calcula el estilo de celda según el dispositivo
     const getColumnStyle = (col) => {
         if (isMobile) {
-            
-            return { width: col.widthMobile || col.width || 180 };
+            return { width: getColumnWidth(col) };
         }
         if (col.width && typeof col.width === 'number') {
             return { flex: col.flex || 1, minWidth: col.width };
         }
         return { flex: col.flex || 1 };
     };
+
+    const mobileTableWidth = isMobile
+        ? Math.max(minWidth, columns.reduce((total, col) => total + getColumnWidth(col) + 12, 0))
+        : '100%';
 
     const getAlignmentStyle = (align) => {
         if (align === 'center') return { alignItems: 'center', justifyContent: 'center' };
@@ -71,13 +76,14 @@ export default function DataTable({ columns, data, title, footer, minWidth = 650
     );
 
     const renderTableContent = () => (
-        <View style={{ width: isMobile ? minWidth : '100%' }}>
+        <View style={{ width: mobileTableWidth }}>
             {renderHeader()}
             <FlatList
                 data={data}
                 renderItem={renderRow}
                 keyExtractor={(item, index) => item.id?.toString() || index.toString()}
                 scrollEnabled={false}
+                nestedScrollEnabled
             />
         </View>
     );
@@ -91,7 +97,12 @@ export default function DataTable({ columns, data, title, footer, minWidth = 650
             )}
 
             {isMobile ? (
-                <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={true}
+                    style={styles.horizontalScroll}
+                    contentContainerStyle={[styles.horizontalScrollContent, { minWidth: mobileTableWidth }]}
+                >
                     {renderTableContent()}
                 </ScrollView>
             ) : (
@@ -113,13 +124,25 @@ export default function DataTable({ columns, data, title, footer, minWidth = 650
 const styles = StyleSheet.create({
     cardContainer: {
         backgroundColor: colors.background,
-        borderRadius: 20,
+        borderRadius: 18,
         borderWidth: 1,
-        borderColor: colors.background,
-        overflow: 'hidden',
+        borderColor: '#e8e6f3',
+        overflow: 'visible',
         elevation: 2,
         marginVertical: 10,
         width: '100%',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+    },
+    horizontalScroll: {
+        width: '100%',
+        borderRadius: 18,
+    },
+    horizontalScrollContent: {
+        minWidth: 650,
+        paddingRight: 4,
     },
     titleContainer: {
         paddingHorizontal: 20,
@@ -133,17 +156,19 @@ const styles = StyleSheet.create({
     },
     tableHeader: {
         flexDirection: 'row',
-        backgroundColor: colors.cardBackground,
+        backgroundColor: '#eceaf5',
         paddingVertical: 12,
         paddingHorizontal: 16,
         borderBottomWidth: 1,
-        borderBottomColor: colors.buttonSecondary,
+        borderBottomColor: '#dfe3f2',
+        borderTopLeftRadius: 18,
+        borderTopRightRadius: 18,
     },
     headerText: {
         fontSize: 11,
         fontWeight: '700',
         color: colors.textMuted,
-        letterSpacing: 0.5,
+        letterSpacing: 0.6,
     },
     row: {
         flexDirection: 'row',
@@ -151,10 +176,11 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderBottomWidth: 1,
-        borderBottomColor: colors.background,
+        borderBottomColor: '#eff0f7',
+        backgroundColor: '#ffffff',
     },
     rowAlternate: {
-        backgroundColor: colors.background,
+        backgroundColor: '#f7f7fb',
     },
     cell: {
         paddingRight: 12,
