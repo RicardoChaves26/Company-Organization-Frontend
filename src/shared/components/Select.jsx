@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Platform, Modal, Pressable } from 'react-native';
 import colors from '../../theme/colors.js';
 import Icon from '../../theme/icons.js';
 
@@ -16,6 +16,8 @@ export default function CustomSelect({
     style,
 }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+    const selectCardRef = useRef(null);
 
     const formattedOptions = options.map((opt) =>
         typeof opt === 'object'
@@ -32,6 +34,45 @@ export default function CustomSelect({
         setIsOpen(false);
     };
 
+    const openSelect = () => {
+        if (disabled) return;
+
+        if (Platform.OS !== 'web' && selectCardRef.current?.measureInWindow) {
+            selectCardRef.current.measureInWindow((x, y, width, height) => {
+                setDropdownPosition({ top: y + height + 4, left: x, width });
+                setIsOpen(true);
+            });
+            return;
+        }
+
+        setIsOpen(true);
+    };
+
+    const renderOptions = () => (
+        formattedOptions.length === 0 ? (
+            <View style={styles.emptyItem}>
+                <Text style={styles.placeholderText}>No hay opciones disponibles</Text>
+            </View>
+        ) : (
+            formattedOptions.map((item, index) => {
+                const isSelected = selectedOption && selectedOption.value === item.value;
+                return (
+                    <TouchableOpacity
+                        key={item.value?.toString() || index.toString()}
+                        style={[styles.optionItem, isSelected && styles.optionItemSelected]}
+                        onPress={() => handleSelectOption(item)}
+                        activeOpacity={0.6}
+                    >
+                        <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
+                            {item.label}
+                        </Text>
+                        {isSelected && <Icon name="check" size={18} color={colors.primary} />}
+                    </TouchableOpacity>
+                );
+            })
+        )
+    );
+
     return (
         <View style={[styles.container, style, { zIndex: isOpen ? 9999 : 1, elevation: isOpen ? 999 : 1 }]}>
             {/* 1. Encabezado del Select */}
@@ -44,8 +85,9 @@ export default function CustomSelect({
 
             {/* 2. Caja del Input Select */}
             <TouchableOpacity
+                ref={selectCardRef}
                 style={[styles.selectCard, disabled && styles.disabledCard]}
-                onPress={() => !disabled && setIsOpen(!isOpen)}
+                onPress={() => isOpen ? setIsOpen(false) : openSelect()}
                 activeOpacity={0.7}
                 disabled={disabled}
             >
@@ -66,32 +108,34 @@ export default function CustomSelect({
 
             {/* 3. Menú Desplegable Flotante Hacia Abajo */}
             {isOpen && (
-                <View style={styles.dropdownMenu}>
-                    <ScrollView nestedScrollEnabled style={styles.scrollList}>
-                        {formattedOptions.length === 0 ? (
-                            <View style={styles.emptyItem}>
-                                <Text style={styles.placeholderText}>No hay opciones disponibles</Text>
+                Platform.OS === 'web' ? (
+                    <View style={styles.dropdownMenu}>
+                        <ScrollView nestedScrollEnabled keyboardShouldPersistTaps="handled" style={styles.scrollList}>
+                            {renderOptions()}
+                        </ScrollView>
+                    </View>
+                ) : (
+                    <Modal transparent visible onRequestClose={() => setIsOpen(false)}>
+                        <Pressable style={styles.modalOverlay} onPress={() => setIsOpen(false)}>
+                            <View
+                                style={[
+                                    styles.dropdownMenu,
+                                    styles.nativeDropdownMenu,
+                                    {
+                                        top: dropdownPosition.top,
+                                        left: dropdownPosition.left,
+                                        width: dropdownPosition.width,
+                                    },
+                                ]}
+                                onStartShouldSetResponder={() => true}
+                            >
+                                <ScrollView keyboardShouldPersistTaps="handled" style={styles.scrollList}>
+                                    {renderOptions()}
+                                </ScrollView>
                             </View>
-                        ) : (
-                            formattedOptions.map((item, index) => {
-                                const isSelected = selectedOption && selectedOption.value === item.value;
-                                return (
-                                    <TouchableOpacity
-                                        key={item.value?.toString() || index.toString()}
-                                        style={[styles.optionItem, isSelected && styles.optionItemSelected]}
-                                        onPress={() => handleSelectOption(item)}
-                                        activeOpacity={0.6}
-                                    >
-                                        <Text style={[styles.optionText, isSelected && styles.optionTextSelected]}>
-                                            {item.label}
-                                        </Text>
-                                        {isSelected && <Icon name="check" size={18} color={colors.primary} />}
-                                    </TouchableOpacity>
-                                );
-                            })
-                        )}
-                    </ScrollView>
-                </View>
+                        </Pressable>
+                    </Modal>
+                )
             )}
         </View>
     );
@@ -162,6 +206,13 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: colors.cardBackground,
+    },
+    nativeDropdownMenu: {
+        position: 'absolute',
+        maxHeight: 220,
+    },
+    modalOverlay: {
+        flex: 1,
     },
     scrollList: {
         paddingVertical: 6,
