@@ -76,11 +76,6 @@ export default function EncierroModule() {
                 </View>
             </Card>
 
-            {/* TABLA DE GALPONES */}
-            <View style={styles.tableHeaderSection}>
-                <Text style={styles.tableSectionTitle}>Galpones Registrados</Text>
-            </View>
-
             <DataTable columns={columns} data={encierros} />
 
             {/* MODAL DE ELIMINACIÓN */}
